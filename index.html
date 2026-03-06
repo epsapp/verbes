@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Révision Verbes Irréguliers</title>
+    <style>
+      :root {
+        --bg: #f3efe3;
+        --panel: #fffaf0;
+        --ink: #1f2937;
+        --muted: #4b5563;
+        --accent: #1d4ed8;
+        --accent-2: #dc2626;
+        --ok: #166534;
+        --warn: #92400e;
+        --border: #d6d3d1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 10% 10%, #fef3c7 0%, transparent 35%),
+          radial-gradient(circle at 90% 90%, #dbeafe 0%, transparent 30%),
+          var(--bg);
+        min-height: 100vh;
+      }
+
+      .wrap {
+        width: min(920px, 92vw);
+        margin: 24px auto 40px;
+      }
+
+      .title {
+        margin: 0 0 8px;
+        font-size: clamp(1.6rem, 4vw, 2.3rem);
+      }
+
+      .subtitle {
+        margin: 0 0 20px;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      @media (min-width: 860px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+      }
+
+      label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      input,
+      select,
+      button {
+        font: inherit;
+      }
+
+      input,
+      select {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 9px 10px;
+        margin-bottom: 10px;
+        background: #fff;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      button.secondary {
+        background: #334155;
+      }
+
+      button.warn {
+        background: var(--accent-2);
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        display: inline-block;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        border-radius: 999px;
+        padding: 2px 10px;
+        font-size: 0.9rem;
+        margin-right: 6px;
+      }
+
+      .question {
+        font-size: 1.3rem;
+        margin: 0 0 8px;
+      }
+
+      .feedback {
+        margin-top: 8px;
+        min-height: 24px;
+        font-weight: 700;
+      }
+
+      .feedback.ok {
+        color: var(--ok);
+      }
+
+      .feedback.bad {
+        color: var(--warn);
+      }
+
+      .table-wrap {
+        max-height: 380px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid #e5e7eb;
+        text-align: left;
+        padding: 8px;
+        font-size: 0.95rem;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        background: #f8fafc;
+      }
+
+      .stats {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+
+      .stat {
+        padding: 6px 10px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        font-weight: 700;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1 class="title">Révision des verbes irréguliers</h1>
+      <p class="subtitle">Mode entraînement et quiz, dans une seule page HTML.</p>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Quiz</h2>
+          <p class="small">
+            Choisis une base verbale, puis saisis le prétérit et le participe passé.
+          </p>
+          <label for="levelMode">Niveau</label>
+          <select id="levelMode">
+            <option value="easy">Facile</option>
+            <option value="medium">Moyen</option>
+            <option value="hard">Difficile</option>
+          </select>
+          <div class="stats">
+            <span class="stat">Niveau: <span id="levelBadge">Facile</span></span>
+            <span class="stat">Question: <span id="qIndex">0</span></span>
+            <span class="stat">Score: <span id="score">0</span></span>
+            <span class="stat">Série: <span id="streak">0</span></span>
+          </div>
+          <p id="question" class="question">Clique sur "Nouvelle question".</p>
+          <span class="pill" id="hint">Traduction: -</span>
+          <div style="margin-top: 10px">
+            <label for="pastInput">Prétérit</label>
+            <input id="pastInput" type="text" placeholder="Ex: went" autocomplete="off" />
+            <label for="ppInput">Participe passé</label>
+            <input id="ppInput" type="text" placeholder="Ex: gone" autocomplete="off" />
+          </div>
+          <div class="actions">
+            <button id="newBtn" type="button">Nouvelle question</button>
+            <button id="checkBtn" type="button" class="secondary">Vérifier</button>
+            <button id="showBtn" type="button" class="warn">Montrer la réponse</button>
+          </div>
+          <p id="feedback" class="feedback"></p>
+        </article>
+
+        <article class="card">
+          <h2>Filtre de révision</h2>
+          <label for="search">Rechercher un verbe (base ou traduction)</label>
+          <input id="search" type="text" placeholder="Ex: go, être, prendre..." />
+          <label for="sortMode">Tri</label>
+          <select id="sortMode">
+            <option value="base">Base verbale (A→Z)</option>
+            <option value="trad">Traduction (A→Z)</option>
+          </select>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Base</th>
+                  <th>Prétérit</th>
+                  <th>Participe</th>
+                  <th>Traduction</th>
+                </tr>
+              </thead>
+              <tbody id="verbTable"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const verbs = [
+        { base: "be", past: "was/were", pp: "been", fr: "être" },
+        { base: "become", past: "became", pp: "become", fr: "devenir" },
+        { base: "begin", past: "began", pp: "begun", fr: "commencer" },
+        { base: "break", past: "broke", pp: "broken", fr: "casser" },
+        { base: "bring", past: "brought", pp: "brought", fr: "apporter" },
+        { base: "build", past: "built", pp: "built", fr: "construire" },
+        { base: "buy", past: "bought", pp: "bought", fr: "acheter" },
+        { base: "catch", past: "caught", pp: "caught", fr: "attraper" },
+        { base: "choose", past: "chose", pp: "chosen", fr: "choisir" },
+        { base: "come", past: "came", pp: "come", fr: "venir" },
+        { base: "cut", past: "cut", pp: "cut", fr: "couper" },
+        { base: "do", past: "did", pp: "done", fr: "faire" },
+        { base: "draw", past: "drew", pp: "drawn", fr: "dessiner" },
+        { base: "drink", past: "drank", pp: "drunk", fr: "boire" },
+        { base: "drive", past: "drove", pp: "driven", fr: "conduire" },
+        { base: "eat", past: "ate", pp: "eaten", fr: "manger" },
+        { base: "fall", past: "fell", pp: "fallen", fr: "tomber" },
+        { base: "feel", past: "felt", pp: "felt", fr: "ressentir" },
+        { base: "find", past: "found", pp: "found", fr: "trouver" },
+        { base: "fly", past: "flew", pp: "flown", fr: "voler" },
+        { base: "forget", past: "forgot", pp: "forgotten", fr: "oublier" },
+        { base: "get", past: "got", pp: "got/gotten", fr: "obtenir" },
+        { base: "give", past: "gave", pp: "given", fr: "donner" },
+        { base: "go", past: "went", pp: "gone", fr: "aller" },
+        { base: "have", past: "had", pp: "had", fr: "avoir" },
+        { base: "hear", past: "heard", pp: "heard", fr: "entendre" },
+        { base: "keep", past: "kept", pp: "kept", fr: "garder" },
+        { base: "know", past: "knew", pp: "known", fr: "savoir" },
+        { base: "leave", past: "left", pp: "left", fr: "quitter" },
+        { base: "lose", past: "lost", pp: "lost", fr: "perdre" },
+        { base: "make", past: "made", pp: "made", fr: "fabriquer" },
+        { base: "meet", past: "met", pp: "met", fr: "rencontrer" },
+        { base: "pay", past: "paid", pp: "paid", fr: "payer" },
+        { base: "put", past: "put", pp: "put", fr: "mettre" },
+        { base: "read", past: "read", pp: "read", fr: "lire" },
+        { base: "run", past: "ran", pp: "run", fr: "courir" },
+        { base: "say", past: "said", pp: "said", fr: "dire" },
+        { base: "see", past: "saw", pp: "seen", fr: "voir" },
+        { base: "sell", past: "sold", pp: "sold", fr: "vendre" },
+        { base: "send", past: "sent", pp: "sent", fr: "envoyer" },
+        { base: "sing", past: "sang", pp: "sung", fr: "chanter" },
+        { base: "sit", past: "sat", pp: "sat", fr: "s'asseoir" },
+        { base: "speak", past: "spoke", pp: "spoken", fr: "parler" },
+        { base: "spend", past: "spent", pp: "spent", fr: "depenser" },
+        { base: "stand", past: "stood", pp: "stood", fr: "se tenir debout" },
+        { base: "swim", past: "swam", pp: "swum", fr: "nager" },
+        { base: "take", past: "took", pp: "taken", fr: "prendre" },
+        { base: "teach", past: "taught", pp: "taught", fr: "enseigner" },
+        { base: "tell", past: "told", pp: "told", fr: "raconter" },
+        { base: "think", past: "thought", pp: "thought", fr: "penser" },
+        { base: "understand", past: "understood", pp: "understood", fr: "comprendre" },
+        { base: "wear", past: "wore", pp: "worn", fr: "porter (vetement)" },
+        { base: "win", past: "won", pp: "won", fr: "gagner" },
+        { base: "write", past: "wrote", pp: "written", fr: "ecrire" }
+      ];
+
+      const levelSets = {
+        easy: new Set([
+          "be",
+          "do",
+          "go",
+          "have",
+          "get",
+          "make",
+          "take",
+          "say",
+          "see",
+          "come",
+          "give",
+          "know",
+          "find",
+          "think",
+          "tell",
+          "write",
+          "eat",
+          "drink"
+        ]),
+        medium: new Set([
+          "begin",
+          "break",
+          "bring",
+          "buy",
+          "choose",
+          "drive",
+          "feel",
+          "hear",
+          "keep",
+          "leave",
+          "lose",
+          "meet",
+          "run",
+          "speak",
+          "teach",
+          "wear",
+          "win",
+          "build"
+        ])
+      };
+      levelSets.hard = new Set(
+        verbs
+          .map((v) => v.base)
+          .filter((base) => !levelSets.easy.has(base) && !levelSets.medium.has(base))
+      );
+
+      const state = {
+        current: null,
+        questionCount: 0,
+        score: 0,
+        streak: 0,
+        level: "easy"
+      };
+
+      const qIndexEl = document.getElementById("qIndex");
+      const scoreEl = document.getElementById("score");
+      const streakEl = document.getElementById("streak");
+      const questionEl = document.getElementById("question");
+      const hintEl = document.getElementById("hint");
+      const pastInput = document.getElementById("pastInput");
+      const ppInput = document.getElementById("ppInput");
+      const feedbackEl = document.getElementById("feedback");
+      const tableBody = document.getElementById("verbTable");
+      const searchInput = document.getElementById("search");
+      const sortMode = document.getElementById("sortMode");
+      const levelMode = document.getElementById("levelMode");
+      const levelBadge = document.getElementById("levelBadge");
+
+      function normalize(value) {
+        return value
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .replace(/’/g, "'")
+          .trim();
+      }
+
+      function acceptable(input, answer) {
+        const candidates = answer.split("/").map((part) => normalize(part));
+        return candidates.includes(normalize(input));
+      }
+
+      function updateStats() {
+        qIndexEl.textContent = String(state.questionCount);
+        scoreEl.textContent = String(state.score);
+        streakEl.textContent = String(state.streak);
+        levelBadge.textContent =
+          state.level === "easy" ? "Facile" : state.level === "medium" ? "Moyen" : "Difficile";
+      }
+
+      function getCurrentPool() {
+        const allowed = levelSets[state.level];
+        return verbs.filter((v) => allowed.has(v.base));
+      }
+
+      function setLevel(level) {
+        state.level = level;
+        state.current = null;
+        state.questionCount = 0;
+        state.score = 0;
+        state.streak = 0;
+        questionEl.textContent = 'Clique sur "Nouvelle question".';
+        hintEl.textContent = "Traduction: -";
+        pastInput.value = "";
+        ppInput.value = "";
+        feedbackEl.textContent = "";
+        feedbackEl.className = "feedback";
+        updateStats();
+        renderTable();
+      }
+
+      function nextQuestion() {
+        const pool = getCurrentPool();
+        if (pool.length === 0) {
+          feedbackEl.textContent = "Aucun verbe disponible pour ce niveau.";
+          feedbackEl.className = "feedback bad";
+          return;
+        }
+        state.current = pool[Math.floor(Math.random() * pool.length)];
+        state.questionCount += 1;
+        questionEl.textContent = `Base verbale: ${state.current.base}`;
+        hintEl.textContent = `Traduction: ${state.current.fr}`;
+        pastInput.value = "";
+        ppInput.value = "";
+        feedbackEl.textContent = "";
+        feedbackEl.className = "feedback";
+        pastInput.focus();
+        updateStats();
+      }
+
+      function checkAnswer() {
+        if (!state.current) {
+          feedbackEl.textContent = "Commence par une nouvelle question.";
+          feedbackEl.className = "feedback bad";
+          return;
+        }
+
+        const pastOk = acceptable(pastInput.value, state.current.past);
+        const ppOk = acceptable(ppInput.value, state.current.pp);
+
+        if (pastOk && ppOk) {
+          state.score += 1;
+          state.streak += 1;
+          feedbackEl.textContent = "Correct. Très bien.";
+          feedbackEl.className = "feedback ok";
+        } else {
+          state.streak = 0;
+          feedbackEl.textContent = `Faux. Réponse: ${state.current.past} / ${state.current.pp}`;
+          feedbackEl.className = "feedback bad";
+        }
+        updateStats();
+      }
+
+      function showAnswer() {
+        if (!state.current) {
+          feedbackEl.textContent = "Commence par une nouvelle question.";
+          feedbackEl.className = "feedback bad";
+          return;
+        }
+        feedbackEl.textContent = `Réponse: ${state.current.past} / ${state.current.pp}`;
+        feedbackEl.className = "feedback bad";
+      }
+
+      function renderTable() {
+        const query = normalize(searchInput.value);
+        const sorted = getCurrentPool().sort((a, b) =>
+          sortMode.value === "trad"
+            ? a.fr.localeCompare(b.fr, "fr")
+            : a.base.localeCompare(b.base, "en")
+        );
+
+        const filtered = sorted.filter((v) => {
+          const hay = `${v.base} ${v.fr} ${v.past} ${v.pp}`.toLowerCase();
+          return hay.includes(query);
+        });
+
+        tableBody.innerHTML = filtered
+          .map(
+            (v) =>
+              `<tr><td>${v.base}</td><td>${v.past}</td><td>${v.pp}</td><td>${v.fr}</td></tr>`
+          )
+          .join("");
+      }
+
+      document.getElementById("newBtn").addEventListener("click", nextQuestion);
+      document.getElementById("checkBtn").addEventListener("click", checkAnswer);
+      document.getElementById("showBtn").addEventListener("click", showAnswer);
+      pastInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          ppInput.focus();
+        }
+      });
+      ppInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          checkAnswer();
+        }
+      });
+      searchInput.addEventListener("input", renderTable);
+      sortMode.addEventListener("change", renderTable);
+      levelMode.addEventListener("change", () => setLevel(levelMode.value));
+
+      updateStats();
+      renderTable();
+    </script>
+  </body>
+</html>
