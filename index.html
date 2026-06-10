@@ -3,532 +3,902 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Révision Verbes Irréguliers</title>
+    <title>HandSeq — Séquençage vidéo handball</title>
     <style>
       :root {
-        --bg: #f3efe3;
-        --panel: #fffaf0;
-        --ink: #1f2937;
-        --muted: #4b5563;
-        --accent: #1d4ed8;
-        --accent-2: #dc2626;
-        --ok: #166534;
-        --warn: #92400e;
-        --border: #d6d3d1;
+        --bg: #0f172a;
+        --panel: #1e293b;
+        --panel-2: #273449;
+        --ink: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #2563eb;
+        --accent-2: #f59e0b;
+        --ok: #22c55e;
+        --bad: #ef4444;
+        --border: #334155;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
-        font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        font-family: "Segoe UI", "Trebuchet MS", system-ui, sans-serif;
         color: var(--ink);
-        background:
-          radial-gradient(circle at 10% 10%, #fef3c7 0%, transparent 35%),
-          radial-gradient(circle at 90% 90%, #dbeafe 0%, transparent 30%),
-          var(--bg);
+        background: var(--bg);
         min-height: 100vh;
+        font-size: 14px;
       }
 
-      .wrap {
-        width: min(920px, 92vw);
-        margin: 24px auto 40px;
-      }
-
-      .title {
-        margin: 0 0 8px;
-        font-size: clamp(1.6rem, 4vw, 2.3rem);
-      }
-
-      .subtitle {
-        margin: 0 0 20px;
-        color: var(--muted);
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr;
+      header {
+        display: flex;
+        align-items: center;
         gap: 14px;
+        padding: 10px 16px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        flex-wrap: wrap;
       }
 
-      @media (min-width: 860px) {
-        .grid {
-          grid-template-columns: 1fr 1fr;
-        }
+      header h1 {
+        font-size: 1.1rem;
+        margin: 0;
+        white-space: nowrap;
+      }
+
+      header .brand-accent { color: var(--accent-2); }
+
+      .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-left: auto; }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 12px;
+        padding: 12px;
+        align-items: start;
+      }
+
+      @media (max-width: 1000px) {
+        .layout { grid-template-columns: 1fr; }
       }
 
       .card {
         background: var(--panel);
         border: 1px solid var(--border);
-        border-radius: 14px;
-        padding: 14px;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
       }
 
-      label {
-        display: block;
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+
+      video {
+        width: 100%;
+        background: #000;
+        border-radius: 10px;
+        max-height: 56vh;
+      }
+
+      .drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 10px;
+        padding: 32px;
+        text-align: center;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .drop-zone.drag { border-color: var(--accent); color: var(--ink); }
+
+      .timeline-wrap { margin-top: 10px; }
+      .timeline {
+        position: relative;
+        height: 34px;
+        background: var(--panel-2);
+        border-radius: 8px;
+        cursor: pointer;
+        overflow: hidden;
+      }
+      .timeline .progress {
+        position: absolute;
+        top: 0; left: 0; bottom: 0;
+        background: rgba(37, 99, 235, 0.25);
+        pointer-events: none;
+      }
+      .timeline .playhead {
+        position: absolute;
+        top: 0; bottom: 0;
+        width: 2px;
+        background: #fff;
+        pointer-events: none;
+      }
+      .timeline .marker {
+        position: absolute;
+        top: 4px;
+        height: 26px;
+        min-width: 3px;
+        border-radius: 3px;
+        opacity: 0.85;
+      }
+      .timeline .marker:hover { opacity: 1; outline: 1px solid #fff; }
+
+      .controls {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 10px;
+      }
+      .time-readout {
+        font-variant-numeric: tabular-nums;
         font-weight: 700;
-        margin-bottom: 6px;
+        background: var(--panel-2);
+        padding: 6px 10px;
+        border-radius: 8px;
+        min-width: 132px;
+        text-align: center;
       }
 
-      input,
-      select,
       button {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 7px 11px;
+        background: var(--panel-2);
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 600;
+      }
+      button:hover { border-color: var(--accent); }
+      button.primary { background: var(--accent); border-color: var(--accent); }
+      button.danger { background: transparent; border-color: var(--bad); color: var(--bad); }
+      button.small { padding: 4px 8px; font-size: 0.82rem; }
+      button:disabled { opacity: 0.45; cursor: not-allowed; }
+      button.active { background: var(--accent-2); border-color: var(--accent-2); color: #1f2937; }
+
+      select, input[type="text"], input[type="number"] {
+        background: var(--panel-2);
+        color: var(--ink);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 6px 8px;
         font: inherit;
       }
+      label.field { display: block; font-size: 0.8rem; color: var(--muted); margin: 6px 0 3px; }
 
-      input,
-      select {
-        width: 100%;
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        padding: 9px 10px;
-        margin-bottom: 10px;
-        background: #fff;
-      }
-
-      .row {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-      }
-
-      button {
-        border: 0;
-        border-radius: 10px;
-        padding: 10px 12px;
-        background: var(--accent);
-        color: #fff;
-        cursor: pointer;
-        font-weight: 700;
-      }
-
-      button.secondary {
-        background: #334155;
-      }
-
-      button.warn {
-        background: var(--accent-2);
-      }
-
-      button:disabled {
-        cursor: not-allowed;
-        opacity: 0.6;
-      }
-
-      .actions {
+      .actiongrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+      .action-btn {
         display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .pill {
-        display: inline-block;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        color: #1e40af;
-        border-radius: 999px;
-        padding: 2px 10px;
-        font-size: 0.9rem;
-        margin-right: 6px;
-      }
-
-      .question {
-        font-size: 1.3rem;
-        margin: 0 0 8px;
-      }
-
-      .feedback {
-        margin-top: 8px;
-        min-height: 24px;
-        font-weight: 700;
-      }
-
-      .feedback.ok {
-        color: var(--ok);
-      }
-
-      .feedback.bad {
-        color: var(--warn);
-      }
-
-      .table-wrap {
-        max-height: 380px;
-        overflow: auto;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        background: #fff;
-      }
-
-      th,
-      td {
-        border-bottom: 1px solid #e5e7eb;
-        text-align: left;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
         padding: 8px;
-        font-size: 0.95rem;
+        border-left: 4px solid #888;
+        text-align: left;
       }
-
-      th {
-        position: sticky;
-        top: 0;
-        background: #f8fafc;
-      }
-
-      .stats {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 8px;
-      }
-
-      .stat {
-        padding: 6px 10px;
-        border-radius: 10px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        font-weight: 700;
-      }
-
-      .small {
+      .action-btn .key {
+        font-size: 0.7rem;
         color: var(--muted);
-        font-size: 0.9rem;
+        background: var(--bg);
+        padding: 0 5px;
+        border-radius: 4px;
       }
+
+      .seg-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        padding: 6px 8px;
+        border-radius: 8px;
+        margin-bottom: 5px;
+        background: var(--panel-2);
+        border-left: 4px solid #888;
+      }
+      .seg-row:hover { outline: 1px solid var(--border); }
+      .seg-main { flex: 1; min-width: 0; cursor: pointer; }
+      .seg-title { font-weight: 700; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+      .seg-meta { font-size: 0.78rem; color: var(--muted); }
+      .tag { font-size: 0.72rem; padding: 1px 7px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); }
+
+      .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+      .stat {
+        background: var(--panel-2);
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .stat b { font-size: 1.2rem; }
+
+      .filters { display: flex; gap: 6px; flex-wrap: wrap; align-items: end; }
+      .muted { color: var(--muted); }
+      .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+      .spacer { flex: 1; }
+      .pill-team { font-size: 0.72rem; padding: 1px 8px; border-radius: 999px; }
+      .team-us { background: rgba(34,197,94,0.18); color: #86efac; }
+      .team-them { background: rgba(239,68,68,0.18); color: #fca5a5; }
+      .hidden { display: none !important; }
+      .scroll { max-height: 320px; overflow: auto; }
+      kbd {
+        background: var(--bg); border: 1px solid var(--border);
+        border-radius: 4px; padding: 0 5px; font-size: 0.78rem;
+      }
+      .hint { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+      .badge-rec { color: var(--bad); font-weight: 700; }
     </style>
   </head>
   <body>
-    <main class="wrap">
-      <h1 class="title">Révision des verbes irréguliers</h1>
-      <p class="subtitle">Mode entraînement et quiz, dans une seule page HTML.</p>
+    <header>
+      <h1>Hand<span class="brand-accent">Seq</span> — séquençage vidéo</h1>
+      <div class="toolbar">
+        <input id="matchName" type="text" placeholder="Nom du match" style="width:180px" />
+        <button id="newProjectBtn" class="small">Nouveau</button>
+        <button id="exportBtn" class="small">Exporter JSON</button>
+        <button id="csvBtn" class="small">Exporter CSV</button>
+        <button id="importBtn" class="small">Importer</button>
+        <input id="importFile" type="file" accept="application/json" class="hidden" />
+      </div>
+    </header>
 
-      <section class="grid">
-        <article class="card">
-          <h2>Quiz</h2>
-          <p class="small">
-            Choisis une base verbale, puis saisis le prétérit et le participe passé.
+    <div class="layout">
+      <!-- ============ COLONNE GAUCHE : LECTEUR ============ -->
+      <div>
+        <div class="card">
+          <h2>Lecteur</h2>
+          <div id="dropZone" class="drop-zone">
+            <p><b>Glisse une vidéo ici</b> ou clique pour choisir un fichier</p>
+            <p class="hint">La vidéo reste sur ta machine, rien n'est envoyé en ligne.</p>
+            <input id="videoFile" type="file" accept="video/*" class="hidden" />
+          </div>
+          <video id="video" class="hidden" playsinline></video>
+
+          <div class="timeline-wrap hidden" id="timelineWrap">
+            <div class="timeline" id="timeline">
+              <div class="progress" id="tlProgress"></div>
+              <div class="playhead" id="tlPlayhead"></div>
+            </div>
+          </div>
+
+          <div class="controls hidden" id="controls">
+            <span class="time-readout"><span id="curTime">0:00.0</span> / <span id="durTime">0:00.0</span></span>
+            <button id="backFrame" class="small" title="Image précédente (,)">⏮ img</button>
+            <button id="back5" class="small" title="-5 s (←)">« 5s</button>
+            <button id="playPause" class="primary" title="Lecture/Pause (Espace)">▶︎</button>
+            <button id="fwd5" class="small" title="+5 s (→)">5s »</button>
+            <button id="fwdFrame" class="small" title="Image suivante (.)">img ⏭</button>
+            <span class="spacer"></span>
+            <label class="muted" style="font-size:0.8rem">Vitesse</label>
+            <select id="speed">
+              <option value="0.25">0.25×</option>
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2×</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ============ TAGGING ============ -->
+        <div class="card hidden" id="taggingCard">
+          <h2>Tagging rapide</h2>
+          <div class="row" style="margin-bottom:8px">
+            <span class="muted">Équipe active :</span>
+            <button id="teamUs" class="active">Nous (Q)</button>
+            <button id="teamThem">Adverse (W)</button>
+            <span class="spacer"></span>
+            <span class="muted">Joueur :</span>
+            <select id="activePlayer" style="max-width:170px"><option value="">— aucun —</option></select>
+          </div>
+          <div class="actiongrid" id="actionGrid"></div>
+          <p class="hint" style="margin-top:10px">
+            Un clic (ou la touche) crée un clip autour de l'instant courant.
+            Pré-roll <input id="preRoll" type="number" value="6" min="0" max="30" style="width:54px"/> s,
+            post-roll <input id="postRoll" type="number" value="3" min="0" max="30" style="width:54px"/> s.
+            Bornage manuel : <kbd>i</kbd> début, <kbd>o</kbd> fin.
+            <span id="inOutStatus"></span>
           </p>
-          <label for="levelMode">Niveau</label>
-          <select id="levelMode">
-            <option value="easy">Facile</option>
-            <option value="medium">Moyen</option>
-            <option value="hard">Difficile</option>
-          </select>
-          <div class="stats">
-            <span class="stat">Niveau: <span id="levelBadge">Facile</span></span>
-            <span class="stat">Question: <span id="qIndex">0</span></span>
-            <span class="stat">Score: <span id="score">0</span></span>
-            <span class="stat">Série: <span id="streak">0</span></span>
-          </div>
-          <p id="question" class="question">Clique sur "Nouvelle question".</p>
-          <span class="pill" id="hint">Traduction: -</span>
-          <div style="margin-top: 10px">
-            <label for="pastInput">Prétérit</label>
-            <input id="pastInput" type="text" placeholder="Ex: went" autocomplete="off" />
-            <label for="ppInput">Participe passé</label>
-            <input id="ppInput" type="text" placeholder="Ex: gone" autocomplete="off" />
-          </div>
-          <div class="actions">
-            <button id="newBtn" type="button">Nouvelle question</button>
-            <button id="checkBtn" type="button" class="secondary">Vérifier</button>
-            <button id="showBtn" type="button" class="warn">Montrer la réponse</button>
-          </div>
-          <p id="feedback" class="feedback"></p>
-        </article>
+        </div>
+      </div>
 
-        <article class="card">
-          <h2>Filtre de révision</h2>
-          <label for="search">Rechercher un verbe (base ou traduction)</label>
-          <input id="search" type="text" placeholder="Ex: go, être, prendre..." />
-          <label for="sortMode">Tri</label>
-          <select id="sortMode">
-            <option value="base">Base verbale (A→Z)</option>
-            <option value="trad">Traduction (A→Z)</option>
-          </select>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Base</th>
-                  <th>Prétérit</th>
-                  <th>Participe</th>
-                  <th>Traduction</th>
-                </tr>
-              </thead>
-              <tbody id="verbTable"></tbody>
-            </table>
+      <!-- ============ COLONNE DROITE : DONNÉES ============ -->
+      <div>
+        <div class="card">
+          <h2>Statistiques</h2>
+          <div class="stat-grid" id="statGrid"></div>
+        </div>
+
+        <div class="card">
+          <h2>Clips <span id="clipCount" class="muted"></span></h2>
+          <div class="filters" style="margin-bottom:8px">
+            <div>
+              <label class="field">Type</label>
+              <select id="filterType"><option value="">Tous</option></select>
+            </div>
+            <div>
+              <label class="field">Équipe</label>
+              <select id="filterTeam">
+                <option value="">Toutes</option>
+                <option value="us">Nous</option>
+                <option value="them">Adverse</option>
+              </select>
+            </div>
+            <div>
+              <label class="field">Joueur</label>
+              <select id="filterPlayer"><option value="">Tous</option></select>
+            </div>
           </div>
-        </article>
-      </section>
-    </main>
+          <div class="row" style="margin-bottom:8px">
+            <button id="playSelection" class="primary small">▶︎ Lire la sélection</button>
+            <button id="stopSelection" class="small" disabled>■ Stop</button>
+            <span class="spacer"></span>
+            <span id="playlistStatus" class="muted" style="font-size:0.8rem"></span>
+          </div>
+          <div class="scroll" id="clipList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Effectif</h2>
+          <div class="row" style="margin-bottom:8px">
+            <input id="playerNum" type="text" placeholder="N°" style="width:56px" />
+            <input id="playerName" type="text" placeholder="Nom du joueur" style="flex:1" />
+            <button id="addPlayer" class="small">+ Ajouter</button>
+          </div>
+          <div id="playerList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Types d'action</h2>
+          <div class="row" style="margin-bottom:8px">
+            <input id="typeName" type="text" placeholder="Libellé" style="flex:1" />
+            <input id="typeKey" type="text" placeholder="Touche" maxlength="1" style="width:56px" />
+            <input id="typeColor" type="text" value="#2563eb" style="width:80px" />
+            <button id="addType" class="small">+</button>
+          </div>
+          <div id="typeList" class="hint"></div>
+        </div>
+
+        <div class="card">
+          <h2>Aide clavier</h2>
+          <p class="hint">
+            <kbd>Espace</kbd> lecture/pause · <kbd>←</kbd>/<kbd>→</kbd> ±5 s ·
+            <kbd>,</kbd>/<kbd>.</kbd> image ± · <kbd>i</kbd>/<kbd>o</kbd> début/fin de clip ·
+            <kbd>Q</kbd>/<kbd>W</kbd> équipe · touches des types = tag rapide.
+          </p>
+        </div>
+      </div>
+    </div>
 
     <script>
-      const verbs = [
-        { base: "be", past: "was/were", pp: "been", fr: "être" },
-        { base: "become", past: "became", pp: "become", fr: "devenir" },
-        { base: "begin", past: "began", pp: "begun", fr: "commencer" },
-        { base: "break", past: "broke", pp: "broken", fr: "casser" },
-        { base: "bring", past: "brought", pp: "brought", fr: "apporter" },
-        { base: "build", past: "built", pp: "built", fr: "construire" },
-        { base: "buy", past: "bought", pp: "bought", fr: "acheter" },
-        { base: "catch", past: "caught", pp: "caught", fr: "attraper" },
-        { base: "choose", past: "chose", pp: "chosen", fr: "choisir" },
-        { base: "come", past: "came", pp: "come", fr: "venir" },
-        { base: "cut", past: "cut", pp: "cut", fr: "couper" },
-        { base: "do", past: "did", pp: "done", fr: "faire" },
-        { base: "draw", past: "drew", pp: "drawn", fr: "dessiner" },
-        { base: "drink", past: "drank", pp: "drunk", fr: "boire" },
-        { base: "drive", past: "drove", pp: "driven", fr: "conduire" },
-        { base: "eat", past: "ate", pp: "eaten", fr: "manger" },
-        { base: "fall", past: "fell", pp: "fallen", fr: "tomber" },
-        { base: "feel", past: "felt", pp: "felt", fr: "ressentir" },
-        { base: "find", past: "found", pp: "found", fr: "trouver" },
-        { base: "fly", past: "flew", pp: "flown", fr: "voler" },
-        { base: "forget", past: "forgot", pp: "forgotten", fr: "oublier" },
-        { base: "get", past: "got", pp: "got/gotten", fr: "obtenir" },
-        { base: "give", past: "gave", pp: "given", fr: "donner" },
-        { base: "go", past: "went", pp: "gone", fr: "aller" },
-        { base: "have", past: "had", pp: "had", fr: "avoir" },
-        { base: "hear", past: "heard", pp: "heard", fr: "entendre" },
-        { base: "keep", past: "kept", pp: "kept", fr: "garder" },
-        { base: "know", past: "knew", pp: "known", fr: "savoir" },
-        { base: "leave", past: "left", pp: "left", fr: "quitter" },
-        { base: "lose", past: "lost", pp: "lost", fr: "perdre" },
-        { base: "make", past: "made", pp: "made", fr: "fabriquer" },
-        { base: "meet", past: "met", pp: "met", fr: "rencontrer" },
-        { base: "pay", past: "paid", pp: "paid", fr: "payer" },
-        { base: "put", past: "put", pp: "put", fr: "mettre" },
-        { base: "read", past: "read", pp: "read", fr: "lire" },
-        { base: "run", past: "ran", pp: "run", fr: "courir" },
-        { base: "say", past: "said", pp: "said", fr: "dire" },
-        { base: "see", past: "saw", pp: "seen", fr: "voir" },
-        { base: "sell", past: "sold", pp: "sold", fr: "vendre" },
-        { base: "send", past: "sent", pp: "sent", fr: "envoyer" },
-        { base: "sing", past: "sang", pp: "sung", fr: "chanter" },
-        { base: "sit", past: "sat", pp: "sat", fr: "s'asseoir" },
-        { base: "speak", past: "spoke", pp: "spoken", fr: "parler" },
-        { base: "spend", past: "spent", pp: "spent", fr: "depenser" },
-        { base: "stand", past: "stood", pp: "stood", fr: "se tenir debout" },
-        { base: "swim", past: "swam", pp: "swum", fr: "nager" },
-        { base: "take", past: "took", pp: "taken", fr: "prendre" },
-        { base: "teach", past: "taught", pp: "taught", fr: "enseigner" },
-        { base: "tell", past: "told", pp: "told", fr: "raconter" },
-        { base: "think", past: "thought", pp: "thought", fr: "penser" },
-        { base: "understand", past: "understood", pp: "understood", fr: "comprendre" },
-        { base: "wear", past: "wore", pp: "worn", fr: "porter (vetement)" },
-        { base: "win", past: "won", pp: "won", fr: "gagner" },
-        { base: "write", past: "wrote", pp: "written", fr: "ecrire" }
+      "use strict";
+
+      /* ============================================================
+         Modèle & état
+         ============================================================ */
+      const FPS = 25; // estimation pour le pas image par image
+      const STORAGE_KEY = "handseq.project.v1";
+
+      const defaultTypes = [
+        { id: "but",   label: "But",          key: "g", color: "#22c55e" },
+        { id: "tir",   label: "Tir manqué",   key: "m", color: "#f59e0b" },
+        { id: "7m",    label: "7 mètres",     key: "p", color: "#a855f7" },
+        { id: "perte", label: "Perte balle",  key: "t", color: "#ef4444" },
+        { id: "recup", label: "Récupération", key: "r", color: "#06b6d4" },
+        { id: "arret", label: "Arrêt gardien",key: "a", color: "#3b82f6" },
+        { id: "ca",    label: "Contre-att.",  key: "c", color: "#eab308" },
+        { id: "2min",  label: "Exclusion",    key: "e", color: "#f43f5e" },
+        { id: "faute", label: "Faute",        key: "f", color: "#94a3b8" },
       ];
 
-      const levelSets = {
-        easy: new Set([
-          "be",
-          "do",
-          "go",
-          "have",
-          "get",
-          "make",
-          "take",
-          "say",
-          "see",
-          "come",
-          "give",
-          "know",
-          "find",
-          "think",
-          "tell",
-          "write",
-          "eat",
-          "drink"
-        ]),
-        medium: new Set([
-          "begin",
-          "break",
-          "bring",
-          "buy",
-          "choose",
-          "drive",
-          "feel",
-          "hear",
-          "keep",
-          "leave",
-          "lose",
-          "meet",
-          "run",
-          "speak",
-          "teach",
-          "wear",
-          "win",
-          "build"
-        ])
-      };
-      levelSets.hard = new Set(
-        verbs
-          .map((v) => v.base)
-          .filter((base) => !levelSets.easy.has(base) && !levelSets.medium.has(base))
-      );
+      let project = loadProject() || newProject();
 
-      const state = {
-        current: null,
-        questionCount: 0,
-        score: 0,
-        streak: 0,
-        level: "easy"
-      };
-
-      const qIndexEl = document.getElementById("qIndex");
-      const scoreEl = document.getElementById("score");
-      const streakEl = document.getElementById("streak");
-      const questionEl = document.getElementById("question");
-      const hintEl = document.getElementById("hint");
-      const pastInput = document.getElementById("pastInput");
-      const ppInput = document.getElementById("ppInput");
-      const feedbackEl = document.getElementById("feedback");
-      const tableBody = document.getElementById("verbTable");
-      const searchInput = document.getElementById("search");
-      const sortMode = document.getElementById("sortMode");
-      const levelMode = document.getElementById("levelMode");
-      const levelBadge = document.getElementById("levelBadge");
-
-      function normalize(value) {
-        return value
-          .toLowerCase()
-          .replace(/\s+/g, "")
-          .replace(/’/g, "'")
-          .trim();
+      function newProject() {
+        return {
+          matchName: "",
+          videoName: "",
+          players: [],
+          types: structuredClone(defaultTypes),
+          clips: [],
+          nextId: 1,
+        };
       }
 
-      function acceptable(input, answer) {
-        const candidates = answer.split("/").map((part) => normalize(part));
-        return candidates.includes(normalize(input));
+      function loadProject() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return null;
+          const p = JSON.parse(raw);
+          if (!p.types || !p.types.length) p.types = structuredClone(defaultTypes);
+          return p;
+        } catch (e) { return null; }
       }
 
-      function updateStats() {
-        qIndexEl.textContent = String(state.questionCount);
-        scoreEl.textContent = String(state.score);
-        streakEl.textContent = String(state.streak);
-        levelBadge.textContent =
-          state.level === "easy" ? "Facile" : state.level === "medium" ? "Moyen" : "Difficile";
+      function saveProject() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(project)); }
+        catch (e) { /* quota dépassé : on ignore silencieusement */ }
       }
 
-      function getCurrentPool() {
-        const allowed = levelSets[state.level];
-        return verbs.filter((v) => allowed.has(v.base));
-      }
+      /* ============================================================
+         Références DOM
+         ============================================================ */
+      const $ = (id) => document.getElementById(id);
+      const video = $("video");
+      const dropZone = $("dropZone");
+      const videoFile = $("videoFile");
+      const timeline = $("timeline");
+      const tlProgress = $("tlProgress");
+      const tlPlayhead = $("tlPlayhead");
+      const curTimeEl = $("curTime");
+      const durTimeEl = $("durTime");
 
-      function setLevel(level) {
-        state.level = level;
-        state.current = null;
-        state.questionCount = 0;
-        state.score = 0;
-        state.streak = 0;
-        questionEl.textContent = 'Clique sur "Nouvelle question".';
-        hintEl.textContent = "Traduction: -";
-        pastInput.value = "";
-        ppInput.value = "";
-        feedbackEl.textContent = "";
-        feedbackEl.className = "feedback";
-        updateStats();
-        renderTable();
-      }
+      let activeTeam = "us";
+      let inPoint = null;
 
-      function nextQuestion() {
-        const pool = getCurrentPool();
-        if (pool.length === 0) {
-          feedbackEl.textContent = "Aucun verbe disponible pour ce niveau.";
-          feedbackEl.className = "feedback bad";
-          return;
+      /* ============================================================
+         Utilitaires
+         ============================================================ */
+      function fmt(t) {
+        if (!isFinite(t) || t < 0) t = 0;
+        const m = Math.floor(t / 60);
+        const s = Math.floor(t % 60);
+        const d = Math.floor((t * 10) % 10);
+        return `${m}:${String(s).padStart(2, "0")}.${d}`;
+      }
+      function typeById(id) { return project.types.find((t) => t.id === id); }
+      function playerById(id) { return project.players.find((p) => p.id === id); }
+
+      /* ============================================================
+         Chargement vidéo
+         ============================================================ */
+      function loadVideoFile(file) {
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        video.src = url;
+        project.videoName = file.name;
+        dropZone.classList.add("hidden");
+        video.classList.remove("hidden");
+        $("timelineWrap").classList.remove("hidden");
+        $("controls").classList.remove("hidden");
+        $("taggingCard").classList.remove("hidden");
+        if (!project.matchName) {
+          project.matchName = file.name.replace(/\.[^.]+$/, "");
+          $("matchName").value = project.matchName;
         }
-        state.current = pool[Math.floor(Math.random() * pool.length)];
-        state.questionCount += 1;
-        questionEl.textContent = `Base verbale: ${state.current.base}`;
-        hintEl.textContent = `Traduction: ${state.current.fr}`;
-        pastInput.value = "";
-        ppInput.value = "";
-        feedbackEl.textContent = "";
-        feedbackEl.className = "feedback";
-        pastInput.focus();
-        updateStats();
+        saveProject();
       }
 
-      function checkAnswer() {
-        if (!state.current) {
-          feedbackEl.textContent = "Commence par une nouvelle question.";
-          feedbackEl.className = "feedback bad";
-          return;
-        }
+      dropZone.addEventListener("click", () => videoFile.click());
+      videoFile.addEventListener("change", (e) => loadVideoFile(e.target.files[0]));
+      dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("drag"); });
+      dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag"));
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("drag");
+        const f = [...e.dataTransfer.files].find((f) => f.type.startsWith("video/"));
+        loadVideoFile(f);
+      });
 
-        const pastOk = acceptable(pastInput.value, state.current.past);
-        const ppOk = acceptable(ppInput.value, state.current.pp);
+      /* ============================================================
+         Contrôles lecteur
+         ============================================================ */
+      function togglePlay() { video.paused ? video.play() : video.pause(); }
+      function seekBy(d) { video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + d)); }
+      function frameStep(dir) { video.pause(); seekBy(dir / FPS); }
 
-        if (pastOk && ppOk) {
-          state.score += 1;
-          state.streak += 1;
-          feedbackEl.textContent = "Correct. Très bien.";
-          feedbackEl.className = "feedback ok";
-        } else {
-          state.streak = 0;
-          feedbackEl.textContent = `Faux. Réponse: ${state.current.past} / ${state.current.pp}`;
-          feedbackEl.className = "feedback bad";
-        }
-        updateStats();
+      $("playPause").addEventListener("click", togglePlay);
+      $("back5").addEventListener("click", () => seekBy(-5));
+      $("fwd5").addEventListener("click", () => seekBy(5));
+      $("backFrame").addEventListener("click", () => frameStep(-1));
+      $("fwdFrame").addEventListener("click", () => frameStep(1));
+      $("speed").addEventListener("change", (e) => (video.playbackRate = parseFloat(e.target.value)));
+
+      video.addEventListener("play", () => ($("playPause").textContent = "⏸"));
+      video.addEventListener("pause", () => ($("playPause").textContent = "▶︎"));
+      video.addEventListener("loadedmetadata", () => {
+        durTimeEl.textContent = fmt(video.duration);
+        renderMarkers();
+      });
+      video.addEventListener("timeupdate", () => {
+        curTimeEl.textContent = fmt(video.currentTime);
+        const pct = video.duration ? (video.currentTime / video.duration) * 100 : 0;
+        tlProgress.style.width = pct + "%";
+        tlPlayhead.style.left = pct + "%";
+        handlePlaylistTick();
+      });
+
+      timeline.addEventListener("click", (e) => {
+        if (!video.duration) return;
+        const rect = timeline.getBoundingClientRect();
+        video.currentTime = ((e.clientX - rect.left) / rect.width) * video.duration;
+      });
+
+      /* ============================================================
+         Tagging
+         ============================================================ */
+      function createClip(typeId, opts = {}) {
+        if (!video.src) return;
+        const now = video.currentTime;
+        const pre = parseFloat($("preRoll").value) || 0;
+        const post = parseFloat($("postRoll").value) || 0;
+        let start = opts.start != null ? opts.start : Math.max(0, now - pre);
+        let end = opts.end != null ? opts.end : Math.min(video.duration || now + post, now + post);
+        const clip = {
+          id: project.nextId++,
+          type: typeId,
+          team: activeTeam,
+          playerId: $("activePlayer").value || "",
+          start, end,
+          note: "",
+        };
+        project.clips.push(clip);
+        saveProject();
+        renderAll();
+        flash(`Clip « ${typeById(typeId)?.label || typeId} » ajouté`);
       }
 
-      function showAnswer() {
-        if (!state.current) {
-          feedbackEl.textContent = "Commence par une nouvelle question.";
-          feedbackEl.className = "feedback bad";
-          return;
-        }
-        feedbackEl.textContent = `Réponse: ${state.current.past} / ${state.current.pp}`;
-        feedbackEl.className = "feedback bad";
+      function setInPoint() { inPoint = video.currentTime; updateInOut(); }
+      function setOutPoint() {
+        if (inPoint == null) { flash("Pose d'abord le début (i)"); return; }
+        const s = Math.min(inPoint, video.currentTime);
+        const e = Math.max(inPoint, video.currentTime);
+        // Crée un clip avec le premier type comme défaut
+        createClip(project.types[0]?.id || "but", { start: s, end: e });
+        inPoint = null;
+        updateInOut();
+      }
+      function updateInOut() {
+        $("inOutStatus").innerHTML = inPoint != null
+          ? `· <span class="badge-rec">● début posé à ${fmt(inPoint)}</span>`
+          : "";
       }
 
-      function renderTable() {
-        const query = normalize(searchInput.value);
-        const sorted = getCurrentPool().sort((a, b) =>
-          sortMode.value === "trad"
-            ? a.fr.localeCompare(b.fr, "fr")
-            : a.base.localeCompare(b.base, "en")
-        );
+      function flash(msg) {
+        const el = $("playlistStatus");
+        el.textContent = msg;
+        clearTimeout(flash._t);
+        flash._t = setTimeout(() => { if (el.textContent === msg) el.textContent = ""; }, 2000);
+      }
 
-        const filtered = sorted.filter((v) => {
-          const hay = `${v.base} ${v.fr} ${v.past} ${v.pp}`.toLowerCase();
-          return hay.includes(query);
+      $("teamUs").addEventListener("click", () => setTeam("us"));
+      $("teamThem").addEventListener("click", () => setTeam("them"));
+      function setTeam(t) {
+        activeTeam = t;
+        $("teamUs").classList.toggle("active", t === "us");
+        $("teamThem").classList.toggle("active", t === "them");
+      }
+
+      /* ============================================================
+         Rendu : grille d'actions
+         ============================================================ */
+      function renderActionGrid() {
+        const grid = $("actionGrid");
+        grid.innerHTML = "";
+        project.types.forEach((t) => {
+          const b = document.createElement("button");
+          b.className = "action-btn";
+          b.style.borderLeftColor = t.color;
+          b.innerHTML = `<span>${t.label}</span>${t.key ? `<span class="key">${t.key.toUpperCase()}</span>` : ""}`;
+          b.addEventListener("click", () => createClip(t.id));
+          grid.appendChild(b);
         });
-
-        tableBody.innerHTML = filtered
-          .map(
-            (v) =>
-              `<tr><td>${v.base}</td><td>${v.past}</td><td>${v.pp}</td><td>${v.fr}</td></tr>`
-          )
-          .join("");
       }
 
-      document.getElementById("newBtn").addEventListener("click", nextQuestion);
-      document.getElementById("checkBtn").addEventListener("click", checkAnswer);
-      document.getElementById("showBtn").addEventListener("click", showAnswer);
-      pastInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          ppInput.focus();
-        }
-      });
-      ppInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          checkAnswer();
-        }
-      });
-      searchInput.addEventListener("input", renderTable);
-      sortMode.addEventListener("change", renderTable);
-      levelMode.addEventListener("change", () => setLevel(levelMode.value));
+      /* ============================================================
+         Rendu : marqueurs timeline
+         ============================================================ */
+      function renderMarkers() {
+        timeline.querySelectorAll(".marker").forEach((m) => m.remove());
+        if (!video.duration) return;
+        visibleClips().forEach((c) => {
+          const m = document.createElement("div");
+          m.className = "marker";
+          m.style.left = (c.start / video.duration) * 100 + "%";
+          m.style.width = Math.max(0.4, ((c.end - c.start) / video.duration) * 100) + "%";
+          m.style.background = typeById(c.type)?.color || "#888";
+          m.title = `${typeById(c.type)?.label || c.type} — ${fmt(c.start)}`;
+          m.addEventListener("click", (e) => { e.stopPropagation(); video.currentTime = c.start; });
+          timeline.appendChild(m);
+        });
+      }
 
-      updateStats();
-      renderTable();
+      /* ============================================================
+         Filtres & liste de clips
+         ============================================================ */
+      function visibleClips() {
+        const ft = $("filterType").value;
+        const fteam = $("filterTeam").value;
+        const fp = $("filterPlayer").value;
+        return project.clips
+          .filter((c) => (!ft || c.type === ft) && (!fteam || c.team === fteam) && (!fp || c.playerId === fp))
+          .sort((a, b) => a.start - b.start);
+      }
+
+      function renderClips() {
+        const list = $("clipList");
+        const clips = visibleClips();
+        $("clipCount").textContent = `(${clips.length})`;
+        list.innerHTML = "";
+        if (!clips.length) {
+          list.innerHTML = `<p class="hint">Aucun clip. Commence à taguer pendant la lecture.</p>`;
+          return;
+        }
+        clips.forEach((c) => {
+          const t = typeById(c.type);
+          const p = playerById(c.playerId);
+          const row = document.createElement("div");
+          row.className = "seg-row";
+          row.style.borderLeftColor = t?.color || "#888";
+          row.innerHTML = `
+            <div class="seg-main">
+              <div class="seg-title">
+                <span>${t?.label || c.type}</span>
+                <span class="pill-team ${c.team === "us" ? "team-us" : "team-them"}">${c.team === "us" ? "Nous" : "Adv"}</span>
+                ${p ? `<span class="tag">#${p.num} ${p.name}</span>` : ""}
+              </div>
+              <div class="seg-meta">${fmt(c.start)} → ${fmt(c.end)} (${(c.end - c.start).toFixed(1)}s)</div>
+            </div>
+            <button class="small play" title="Lire">▶︎</button>
+            <button class="small danger del" title="Supprimer">✕</button>`;
+          row.querySelector(".seg-main").addEventListener("click", () => playClip(c));
+          row.querySelector(".play").addEventListener("click", () => playClip(c));
+          row.querySelector(".del").addEventListener("click", () => {
+            project.clips = project.clips.filter((x) => x.id !== c.id);
+            saveProject(); renderAll();
+          });
+          list.appendChild(row);
+        });
+      }
+
+      function playClip(c) {
+        stopPlaylist();
+        video.currentTime = c.start;
+        video.play();
+        playlist.single = c.end;
+      }
+
+      /* ============================================================
+         Playlist (lecture enchaînée de la sélection)
+         ============================================================ */
+      const playlist = { queue: [], idx: -1, active: false, single: null };
+
+      function startPlaylist() {
+        const clips = visibleClips();
+        if (!clips.length) { flash("Aucun clip à lire"); return; }
+        playlist.queue = clips;
+        playlist.idx = 0;
+        playlist.active = true;
+        $("stopSelection").disabled = false;
+        gotoPlaylistItem(0);
+      }
+      function gotoPlaylistItem(i) {
+        const c = playlist.queue[i];
+        if (!c) { stopPlaylist(); return; }
+        video.currentTime = c.start;
+        video.play();
+        $("playlistStatus").textContent = `Lecture ${i + 1}/${playlist.queue.length}`;
+      }
+      function stopPlaylist() {
+        playlist.active = false;
+        playlist.single = null;
+        $("stopSelection").disabled = true;
+        $("playlistStatus").textContent = "";
+      }
+      function handlePlaylistTick() {
+        if (playlist.single != null && video.currentTime >= playlist.single) {
+          video.pause();
+          playlist.single = null;
+        }
+        if (playlist.active) {
+          const c = playlist.queue[playlist.idx];
+          if (c && video.currentTime >= c.end) {
+            playlist.idx++;
+            if (playlist.idx >= playlist.queue.length) stopPlaylist();
+            else gotoPlaylistItem(playlist.idx);
+          }
+        }
+      }
+      $("playSelection").addEventListener("click", startPlaylist);
+      $("stopSelection").addEventListener("click", () => { stopPlaylist(); video.pause(); });
+
+      /* ============================================================
+         Statistiques
+         ============================================================ */
+      function renderStats() {
+        const grid = $("statGrid");
+        const clips = visibleClips();
+        const counts = {};
+        clips.forEach((c) => (counts[c.type] = (counts[c.type] || 0) + 1));
+        const items = [
+          { label: "Clips", value: clips.length },
+          { label: "Nous", value: clips.filter((c) => c.team === "us").length },
+          { label: "Adverse", value: clips.filter((c) => c.team === "them").length },
+        ];
+        project.types.forEach((t) => { if (counts[t.id]) items.push({ label: t.label, value: counts[t.id], color: t.color }); });
+        grid.innerHTML = items.map((i) =>
+          `<div class="stat" ${i.color ? `style="border-left:3px solid ${i.color}"` : ""}>
+             <span class="muted">${i.label}</span><b>${i.value}</b></div>`).join("");
+      }
+
+      /* ============================================================
+         Effectif & types : gestion
+         ============================================================ */
+      function renderPlayers() {
+        const list = $("playerList");
+        list.innerHTML = project.players.length
+          ? "" : `<p class="hint">Aucun joueur. Ajoute ton effectif pour attribuer les actions.</p>`;
+        project.players.forEach((p) => {
+          const row = document.createElement("div");
+          row.className = "seg-row";
+          row.innerHTML = `<div class="seg-main"><b>#${p.num}</b> ${p.name}</div>
+                           <button class="small danger del">✕</button>`;
+          row.querySelector(".del").addEventListener("click", () => {
+            project.players = project.players.filter((x) => x.id !== p.id);
+            saveProject(); renderAll();
+          });
+          list.appendChild(row);
+        });
+        // selecteurs
+        const opts = `<option value="">— aucun —</option>` +
+          project.players.map((p) => `<option value="${p.id}">#${p.num} ${p.name}</option>`).join("");
+        const keepA = $("activePlayer").value, keepF = $("filterPlayer").value;
+        $("activePlayer").innerHTML = opts;
+        $("filterPlayer").innerHTML = `<option value="">Tous</option>` +
+          project.players.map((p) => `<option value="${p.id}">#${p.num} ${p.name}</option>`).join("");
+        $("activePlayer").value = keepA;
+        $("filterPlayer").value = keepF;
+      }
+
+      $("addPlayer").addEventListener("click", () => {
+        const num = $("playerNum").value.trim();
+        const name = $("playerName").value.trim();
+        if (!name) return;
+        project.players.push({ id: "p" + project.nextId++, num: num || "?", name });
+        $("playerNum").value = ""; $("playerName").value = "";
+        saveProject(); renderPlayers();
+      });
+
+      function renderTypes() {
+        const list = $("typeList");
+        list.innerHTML = "";
+        project.types.forEach((t) => {
+          const row = document.createElement("div");
+          row.className = "seg-row";
+          row.style.borderLeftColor = t.color;
+          row.innerHTML = `<div class="seg-main">${t.label} ${t.key ? `<kbd>${t.key.toUpperCase()}</kbd>` : ""}</div>
+                           <button class="small danger del">✕</button>`;
+          row.querySelector(".del").addEventListener("click", () => {
+            project.types = project.types.filter((x) => x.id !== t.id);
+            saveProject(); renderAll();
+          });
+          list.appendChild(row);
+        });
+        // filtre type
+        const keep = $("filterType").value;
+        $("filterType").innerHTML = `<option value="">Tous</option>` +
+          project.types.map((t) => `<option value="${t.id}">${t.label}</option>`).join("");
+        $("filterType").value = keep;
+      }
+
+      $("addType").addEventListener("click", () => {
+        const label = $("typeName").value.trim();
+        if (!label) return;
+        const key = $("typeKey").value.trim().toLowerCase();
+        const color = $("typeColor").value.trim() || "#2563eb";
+        project.types.push({ id: "t" + project.nextId++, label, key, color });
+        $("typeName").value = ""; $("typeKey").value = "";
+        saveProject(); renderActionGrid(); renderTypes();
+      });
+
+      /* ============================================================
+         Import / Export / Nouveau
+         ============================================================ */
+      function download(filename, content, mime) {
+        const blob = new Blob([content], { type: mime });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+
+      $("exportBtn").addEventListener("click", () => {
+        project.matchName = $("matchName").value;
+        download((project.matchName || "match") + ".handseq.json",
+          JSON.stringify(project, null, 2), "application/json");
+      });
+
+      $("csvBtn").addEventListener("click", () => {
+        const header = "type;equipe;joueur;debut_s;fin_s;duree_s;debut_tc;fin_tc;note";
+        const rows = visibleClips().map((c) => {
+          const p = playerById(c.playerId);
+          return [
+            typeById(c.type)?.label || c.type,
+            c.team === "us" ? "Nous" : "Adverse",
+            p ? `#${p.num} ${p.name}` : "",
+            c.start.toFixed(2), c.end.toFixed(2), (c.end - c.start).toFixed(2),
+            fmt(c.start), fmt(c.end), (c.note || "").replace(/;/g, ","),
+          ].join(";");
+        });
+        download((project.matchName || "match") + ".clips.csv", [header, ...rows].join("\n"), "text/csv");
+      });
+
+      $("importBtn").addEventListener("click", () => $("importFile").click());
+      $("importFile").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const p = JSON.parse(reader.result);
+            if (!p.clips || !p.types) throw new Error("format");
+            project = p;
+            $("matchName").value = project.matchName || "";
+            saveProject();
+            renderAll();
+            flash("Projet importé");
+          } catch (err) { alert("Fichier invalide."); }
+        };
+        reader.readAsText(file);
+      });
+
+      $("newProjectBtn").addEventListener("click", () => {
+        if (!confirm("Démarrer un nouveau projet ? Les clips non exportés seront perdus.")) return;
+        project = newProject();
+        $("matchName").value = "";
+        saveProject();
+        renderAll();
+      });
+
+      $("matchName").addEventListener("input", (e) => { project.matchName = e.target.value; saveProject(); });
+
+      /* ============================================================
+         Raccourcis clavier
+         ============================================================ */
+      document.addEventListener("keydown", (e) => {
+        const tag = (e.target.tagName || "").toLowerCase();
+        if (tag === "input" || tag === "select" || tag === "textarea") return;
+        const k = e.key.toLowerCase();
+        if (e.key === " ") { e.preventDefault(); togglePlay(); return; }
+        if (e.key === "ArrowLeft")  { e.preventDefault(); seekBy(-5); return; }
+        if (e.key === "ArrowRight") { e.preventDefault(); seekBy(5);  return; }
+        if (k === ",") { frameStep(-1); return; }
+        if (k === ".") { frameStep(1);  return; }
+        if (k === "i") { setInPoint(); return; }
+        if (k === "o") { setOutPoint(); return; }
+        if (k === "q") { setTeam("us"); return; }
+        if (k === "w") { setTeam("them"); return; }
+        const type = project.types.find((t) => t.key && t.key.toLowerCase() === k);
+        if (type) { e.preventDefault(); createClip(type.id); }
+      });
+
+      /* ============================================================
+         Rendu global
+         ============================================================ */
+      const reRenderFilters = () => { renderClips(); renderStats(); renderMarkers(); };
+      $("filterType").addEventListener("change", reRenderFilters);
+      $("filterTeam").addEventListener("change", reRenderFilters);
+      $("filterPlayer").addEventListener("change", reRenderFilters);
+
+      function renderAll() {
+        renderActionGrid();
+        renderTypes();
+        renderPlayers();
+        renderClips();
+        renderStats();
+        renderMarkers();
+        updateInOut();
+      }
+
+      // init
+      $("matchName").value = project.matchName || "";
+      renderAll();
     </script>
   </body>
 </html>
