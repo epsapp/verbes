@@ -551,6 +551,11 @@
         clearVideoError();
         durTimeEl.textContent = fmt(video.duration);
         renderMarkers();
+        // Force le rendu de la première image (sinon Safari/Chrome affichent un écran noir
+        // tant que la lecture n'a pas démarré).
+        if (video.currentTime === 0) {
+          try { video.currentTime = Math.min(0.1, (video.duration || 1) / 2); } catch (e) {}
+        }
       });
       video.addEventListener("timeupdate", () => {
         curTimeEl.textContent = fmt(video.currentTime);
