@@ -258,7 +258,8 @@
             <p class="hint">La vidéo reste sur ta machine, rien n'est envoyé en ligne.</p>
             <input id="videoFile" type="file" accept="video/*" class="hidden" />
           </div>
-          <video id="video" class="hidden" playsinline></video>
+          <video id="video" class="hidden" playsinline controls></video>
+          <div id="videoError" class="hidden" style="margin-top:10px;padding:10px 12px;border:1px solid var(--bad);border-radius:8px;background:rgba(239,68,68,0.12);color:#fecaca"></div>
 
           <div class="timeline-wrap hidden" id="timelineWrap">
             <div class="timeline" id="timeline">
@@ -457,9 +458,29 @@
       /* ============================================================
          Chargement vidéo
          ============================================================ */
+      function showVideoError(msg) {
+        const el = $("videoError");
+        el.innerHTML = msg;
+        el.classList.remove("hidden");
+      }
+      function clearVideoError() { $("videoError").classList.add("hidden"); }
+
       function loadVideoFile(file) {
         if (!file) return;
+        clearVideoError();
+        if (file.type && !file.type.startsWith("video/")) {
+          showVideoError(`Ce fichier n'est pas reconnu comme une vidéo (type « ${file.type || "inconnu"} »).`);
+        }
+        // Avertissement codec : si le navigateur dit clairement ne pas pouvoir lire le type.
+        if (file.type && video.canPlayType(file.type) === "") {
+          showVideoError(
+            `⚠️ Ton navigateur ne sait probablement pas décoder ce fichier ` +
+            `(type « ${file.type} », souvent du HEVC/H.265). ` +
+            `Essaie dans <b>Safari</b>, ou convertis la vidéo en <b>MP4 H.264</b>.`
+          );
+        }
         const url = URL.createObjectURL(file);
+        if (video.src) URL.revokeObjectURL(video.src);
         video.src = url;
         project.videoName = file.name;
         dropZone.classList.add("hidden");
@@ -471,8 +492,26 @@
           project.matchName = file.name.replace(/\.[^.]+$/, "");
           $("matchName").value = project.matchName;
         }
+        video.load();
         saveProject();
       }
+
+      // Erreur de décodage signalée par le navigateur (codec non supporté, fichier illisible…)
+      video.addEventListener("error", () => {
+        const codes = {
+          1: "lecture interrompue",
+          2: "erreur réseau",
+          3: "impossible de décoder la vidéo (codec non supporté)",
+          4: "format ou codec non pris en charge par ce navigateur",
+        };
+        const c = video.error ? video.error.code : 0;
+        showVideoError(
+          `❌ Lecture impossible : ${codes[c] || "erreur inconnue"}.<br>` +
+          `La plupart du temps c'est un codec <b>HEVC/H.265</b>. ` +
+          `Convertis le fichier en <b>MP4 H.264 (AAC audio)</b> ` +
+          `(par ex. avec HandBrake ou VLC), puis recharge-le.`
+        );
+      });
 
       dropZone.addEventListener("click", () => videoFile.click());
       videoFile.addEventListener("change", (e) => loadVideoFile(e.target.files[0]));
@@ -488,7 +527,14 @@
       /* ============================================================
          Contrôles lecteur
          ============================================================ */
-      function togglePlay() { video.paused ? video.play() : video.pause(); }
+      function togglePlay() {
+        if (video.paused) {
+          const p = video.play();
+          if (p && p.catch) p.catch(() => {}); // ignore les rejets (autoplay, codec…)
+        } else {
+          video.pause();
+        }
+      }
       function seekBy(d) { video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + d)); }
       function frameStep(dir) { video.pause(); seekBy(dir / FPS); }
 
@@ -502,6 +548,7 @@
       video.addEventListener("play", () => ($("playPause").textContent = "⏸"));
       video.addEventListener("pause", () => ($("playPause").textContent = "▶︎"));
       video.addEventListener("loadedmetadata", () => {
+        clearVideoError();
         durTimeEl.textContent = fmt(video.duration);
         renderMarkers();
       });
